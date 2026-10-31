@@ -101,15 +101,16 @@ private val equationRows = listOf(
 private val graphRows = listOf(
     listOf("x", "(", ")", "^"),
     listOf("sin", "cos", "tan", "√"),
-    listOf("C", "⌫", "π", "÷"),
+    listOf("abs", "ln", "log", "e"),
+    listOf("C", "⌫", ";", "÷"),
     listOf("7", "8", "9", "×"),
     listOf("4", "5", "6", "−"),
     listOf("1", "2", "3", "+"),
-    listOf("0", ".", "ln", "e"),
+    listOf("0", ".", "π"),
 )
 
-private val functionKeys = setOf("sin", "cos", "tan", "√", "ln")
-private val operatorKeys = setOf("÷", "×", "−", "+", "^")
+private val functionKeys = setOf("sin", "cos", "tan", "√", "ln", "log", "abs")
+private val operatorKeys = setOf("÷", "×", "−", "+", "^", ";")
 
 @Composable
 fun CalculatorApp(darkTheme: Boolean, onToggleTheme: () -> Unit) {
@@ -165,7 +166,7 @@ fun CalculatorApp(darkTheme: Boolean, onToggleTheme: () -> Unit) {
             "C" -> { setExpression(""); setResult("") }
             "⌫" -> {
                 setExpression(
-                    expression.replace(Regex("(sin\\(|cos\\(|tan\\(|sqrt\\(|ln\\(|log\\(|.)$"), "")
+                    expression.replace(Regex("(sin\\(|cos\\(|tan\\(|sqrt\\(|ln\\(|log\\(|abs\\(|.)$"), "")
                 )
                 setResult("")
             }
@@ -202,7 +203,7 @@ fun CalculatorApp(darkTheme: Boolean, onToggleTheme: () -> Unit) {
                 }
             }
             "√" -> { setExpression("${expression}sqrt("); setResult("") }
-            "sin", "cos", "tan", "ln", "log" -> { setExpression("$expression$key("); setResult("") }
+            "sin", "cos", "tan", "ln", "log", "abs" -> { setExpression("$expression$key("); setResult("") }
             "π" -> { setExpression("${expression}pi"); setResult("") }
             else -> { setExpression(expression + key); setResult("") }
         }
@@ -234,7 +235,7 @@ fun CalculatorApp(darkTheme: Boolean, onToggleTheme: () -> Unit) {
             }
 
             PrimaryTabRow(selectedTabIndex = mode) {
-                listOf("Calculadora", "Ecuaciones", "Gráfica").forEachIndexed { index, title ->
+                listOf("Calc", "Ecuaciones", "Gráfica", "Juegos").forEachIndexed { index, title ->
                     Tab(
                         selected = mode == index,
                         onClick = { mode = index },
@@ -243,7 +244,14 @@ fun CalculatorApp(darkTheme: Boolean, onToggleTheme: () -> Unit) {
                 }
             }
 
-            if (mode == 2) {
+            if (mode == 3) {
+                // Juego (trae su propio teclado)
+                GamesHub(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                )
+            } else if (mode == 2) {
                 // Gráfica
                 Column(
                     modifier = Modifier
@@ -321,15 +329,15 @@ fun CalculatorApp(darkTheme: Boolean, onToggleTheme: () -> Unit) {
                 1 -> equationRows
                 else -> graphRows
             }
-            val keyHeight = if (mode == 2) 46.dp else 56.dp
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            val keyHeight = if (mode == 2) 40.dp else 56.dp
+            if (mode != 3) Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 rows.forEach { row ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         row.forEach { key ->
-                            val wide = (key == "=" && mode == 0) || key == "Resolver"
+                            val wide = (key == "=" && mode == 0) || key == "Resolver" || (key == "0" && mode == 2)
                             CalcButton(
                                 label = key,
                                 height = keyHeight,

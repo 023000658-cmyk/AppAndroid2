@@ -54,13 +54,19 @@ fun FunctionGraph(expression: String, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val textMeasurer = rememberTextMeasurer()
 
-    val valid = remember(expression) {
-        expression.isNotBlank() && runCatching { ExpressionParser(expression, 0.0).parse() }.isSuccess
+    // Varias funciones separadas por ";" — cada una se dibuja de un color
+    val checked = remember(expression) {
+        expression.split(";")
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .map { p -> p to runCatching { ExpressionParser(p, 0.0).parse() }.isSuccess }
     }
+    val validParts = checked.filter { it.second }.map { it.first }
+    val hasInvalid = checked.any { !it.second }
 
     val gridColor = colors.outlineVariant.copy(alpha = 0.5f)
     val axisColor = colors.onSurface.copy(alpha = 0.7f)
-    val curveColor = colors.primary
+    val curveColors = listOf(colors.primary, colors.tertiary, colors.error, colors.secondary)
     val rootColor = colors.tertiary
     val labelStyle = TextStyle(fontSize = 10.sp, color = colors.onSurfaceVariant)
     val rootStyle = TextStyle(fontSize = 11.sp, color = colors.tertiary)
@@ -120,7 +126,7 @@ fun FunctionGraph(expression: String, modifier: Modifier = Modifier) {
             if (x0 in 0f..w) drawLine(axisColor, Offset(x0, 0f), Offset(x0, h), strokeWidth = 2f)
 
             // Curva
-            if (valid) {
+            validParts.forEachIndexed { idx, part ->
                 val path = Path()
                 val roots = mutableListOf<Double>()
                 var pen = false
@@ -130,7 +136,7 @@ fun FunctionGraph(expression: String, modifier: Modifier = Modifier) {
                 var px = 0f
                 while (px <= w) {
                     val x = ox + (px - w / 2) / sc.toDouble()
-                    val y = evalAt(expression, x)
+                    val y = evalAt(part, x)
                     if (y.isFinite()) {
                         val sy = toSy(y)
                         if (abs(sy) > 50f * h) {
@@ -157,12 +163,12 @@ fun FunctionGraph(expression: String, modifier: Modifier = Modifier) {
                 }
                 drawPath(
                     path = path,
-                    color = curveColor,
+                    color = curveColors[idx % curveColors.size],
                     style = Stroke(width = 3.5f, cap = StrokeCap.Round, join = StrokeJoin.Round)
                 )
 
-                // Raíces (cruces con el eje X)
-                for (r in roots) {
+                // Raíces (cruces con el eje X): solo se marcan cuando hay una sola función
+                for (r in if (validParts.size == 1) roots else emptyList()) {
                     val center = Offset(toSx(r), toSy(0.0))
                     drawCircle(rootColor, radius = 6f, center = center)
                     drawText(
@@ -177,11 +183,11 @@ fun FunctionGraph(expression: String, modifier: Modifier = Modifier) {
 
         if (expression.isBlank()) {
             Text(
-                text = "Escribe una función de x\nEj: x^2-4  o  sin(x)",
+                text = "Escribe una función de x\nEj: x^2-4  o  sin(x)\nVarias a la vez: x^2 ; -x^2",
                 color = colors.onSurfaceVariant,
                 modifier = Modifier.align(Alignment.Center)
             )
-        } else if (!valid) {
+        } else if (hasInvalid) {
             Text(
                 text = "Expresión incompleta",
                 color = colors.error,
