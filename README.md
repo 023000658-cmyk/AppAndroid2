@@ -5,7 +5,7 @@ Aplicación de calculadora para Android que integra funciones matemáticas y opc
 ###Calculadora
 - Realiza operaciones matemáticas básicas.
 - Permite realizar cálculos de manera sencilla.
-- <img width="335" height="752" alt="image" src="https://github.com/user-attachments/assets/59aa76e6-5647-4ea9-a0f5-7d5ba5efce34" />
+- <img width="335" height="750" alt="image" src="https://github.com/user-attachments/assets/2abba5e0-8f47-48b4-8384-531079a9d15d" />
 
 ###Resolución de ecuaciones
 - Resuelve ecuaciones matemáticas.
