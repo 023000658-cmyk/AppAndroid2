@@ -21,7 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -234,8 +234,8 @@ fun CalculatorApp(darkTheme: Boolean, onToggleTheme: () -> Unit) {
                 }
             }
 
-            PrimaryTabRow(selectedTabIndex = mode) {
-                listOf("Calc", "Ecuaciones", "Gráfica", "Juegos").forEachIndexed { index, title ->
+            PrimaryScrollableTabRow(selectedTabIndex = mode, edgePadding = 8.dp) {
+                listOf("Calc", "Ecuaciones", "Gráfica", "Juego", "IA 🤖").forEachIndexed { index, title ->
                     Tab(
                         selected = mode == index,
                         onClick = { mode = index },
@@ -244,7 +244,14 @@ fun CalculatorApp(darkTheme: Boolean, onToggleTheme: () -> Unit) {
                 }
             }
 
-            if (mode == 3) {
+            if (mode == 4) {
+                // Chat con el tutor de mate (trae su propio teclado)
+                ChatTab(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                )
+            } else if (mode == 3) {
                 // Juego (trae su propio teclado)
                 GamesHub(
                     modifier = Modifier
@@ -330,7 +337,7 @@ fun CalculatorApp(darkTheme: Boolean, onToggleTheme: () -> Unit) {
                 else -> graphRows
             }
             val keyHeight = if (mode == 2) 40.dp else 56.dp
-            if (mode != 3) Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (mode < 3) Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 rows.forEach { row ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),

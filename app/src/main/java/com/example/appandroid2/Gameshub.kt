@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 /** Pestaña "Juego": un selector arriba para elegir entre los juegos. */
 @Composable
 fun GamesHub(modifier: Modifier = Modifier) {
-    var game by rememberSaveable { mutableIntStateOf(0) } // 0 = Viborita, 1 = Gato, 2 = Tetris, 3 = Gemas
+    var game by rememberSaveable { mutableIntStateOf(0) } // 0 = Viborita, 1 = Gato, 2 = Tetris, 3 = Gemas, 4 = Rompecabezas
 
     Column(modifier = modifier.fillMaxSize()) {
         Row(
@@ -51,6 +51,11 @@ fun GamesHub(modifier: Modifier = Modifier) {
                 onClick = { game = 3 },
                 label = { Text("💎 Gemas") }
             )
+            FilterChip(
+                selected = game == 4,
+                onClick = { game = 4 },
+                label = { Text("🧩 Rompecabezas") }
+            )
         }
 
         val gameModifier = Modifier
@@ -60,7 +65,8 @@ fun GamesHub(modifier: Modifier = Modifier) {
             0 -> SnakeGame(gameModifier)
             1 -> TicTacToeGame(gameModifier)
             2 -> TetrisGame(gameModifier)
-            else -> GemGame(gameModifier)
+            3 -> GemGame(gameModifier)
+            else -> JigsawGame(gameModifier)
         }
     }
 }
