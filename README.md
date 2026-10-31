@@ -1,6 +1,6 @@
 # Calculadora Android
 
-Aplicación de calculadora para Android que integra funciones matemáticas y opciones de entretenimiento en una sola aplicación. Además de realizar operaciones básicas, permite resolver ecuaciones, graficar funciones matemáticas y disfrutar de diferentes juegos.
+Aplicación de calculadora para Android que integra funciones matemáticas y opciones de entretenimiento en una sola aplicación. Además de realizar operaciones básicas, permite resolver ecuaciones, graficar funciones matemáticas y disfrutar de diferentes juegos. La aplicación permite cambiar entre un tema claro y uno oscuro, adaptando los colores de la interfaz para ofrecer una experiencia visual más cómoda y personalizada según las preferencias del usuario.
 
 ###Calculadora
 - Realiza operaciones matemáticas básicas.
@@ -31,6 +31,9 @@ La aplicación incluye cuatro juegos para entretenimiento:
 
 - **Gato (Tic-Tac-Toe):** juego clásico de tres en raya.
 - <img width="337" height="747" alt="image" src="https://github.com/user-attachments/assets/307fb625-d59a-4374-b445-3bbae377bfe7" />
+
+-**Rompecabezas: juego de armar una imagen colocando las piezas en el lugar correcto hasta completar la imagen.
+- <img width="347" height="752" alt="image" src="https://github.com/user-attachments/assets/83b7eda6-318d-43b4-acd5-117f25737143" />
 
 
 ##Tecnologías utilizadas
