@@ -235,7 +235,7 @@ fun CalculatorApp(darkTheme: Boolean, onToggleTheme: () -> Unit) {
             }
 
             PrimaryScrollableTabRow(selectedTabIndex = mode, edgePadding = 8.dp) {
-                listOf("Calc", "Ecuaciones", "Gráfica", "Juego", "IA 🤖").forEachIndexed { index, title ->
+                listOf("Calc", "Ecuaciones", "Gráfica", "Juegos").forEachIndexed { index, title ->
                     Tab(
                         selected = mode == index,
                         onClick = { mode = index },
@@ -246,11 +246,6 @@ fun CalculatorApp(darkTheme: Boolean, onToggleTheme: () -> Unit) {
 
             if (mode == 4) {
                 // Chat con el tutor de mate (trae su propio teclado)
-                ChatTab(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                )
             } else if (mode == 3) {
                 // Juego (trae su propio teclado)
                 GamesHub(
