@@ -38,7 +38,7 @@ La aplicación incluye cinco juegos para entretenimiento:
 
 <img width="332" height="713" alt="Tetris" src="https://github.com/user-attachments/assets/3963a519-c089-4c65-90de-85c29d2ccbde" />
 
-- **Gemas:** juego de aventura inspirado en Diamond Rush, donde el jugador explora escenarios, recoge gemas y supera obstáculos. Es una versión sencilla del juego clásico.
+- **Gemas:** juego de aventura, donde el jugador explora escenarios, recoge gemas y supera obstáculos. Es una versión sencilla del juego clásico.
 
 <img width="337" height="705" alt="Gemas" src="https://github.com/user-attachments/assets/f97e4875-1d65-46a4-bfd8-7c3c67cc5f88" />
 
