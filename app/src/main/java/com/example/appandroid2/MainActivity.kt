@@ -21,29 +21,37 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryScrollableTabRow
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.appandroid2.ui.theme.AppAndroid2Theme
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -214,165 +222,214 @@ fun CalculatorApp(darkTheme: Boolean, onToggleTheme: () -> Unit) {
         runCatching { formatNumber(ExpressionParser(expression).parse()) }.getOrNull()
     } else null
 
-    Scaffold { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 12.dp, vertical = 8.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                TextButton(onClick = { showHistory = true }) {
-                    Text("🕘 Historial")
-                }
-                TextButton(onClick = onToggleTheme) {
-                    Text(if (darkTheme) "☀️ Modo claro" else "🌙 Modo oscuro")
-                }
-            }
+    // Menú de hamburguesa (☰): las secciones, el historial y el modo claro/oscuro
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+    val sections = listOf("Calculadora", "Ecuaciones", "Gráfica", "Juegos", "MATHIA")
+    val itemPadding = PaddingValues(horizontal = 12.dp)
 
-            PrimaryScrollableTabRow(selectedTabIndex = mode, edgePadding = 8.dp) {
-                listOf("Calc", "Ecuaciones", "Gráfica", "Juegos").forEachIndexed { index, title ->
-                    Tab(
-                        selected = mode == index,
-                        onClick = { mode = index },
-                        text = { Text(title, maxLines = 1, fontSize = 14.sp) }
-                    )
-                }
-            }
-
-            if (mode == 4) {
-                // Chat con el tutor de mate (trae su propio teclado)
-            } else if (mode == 3) {
-                // Juego (trae su propio teclado)
-                GamesHub(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        // En los juegos se desactiva el deslizar para abrir el menú, para que no estorbe a los gestos del juego
+        gesturesEnabled = drawerState.isOpen || mode != 3,
+        drawerContent = {
+            ModalDrawerSheet {
+                Text(
+                    "Menú",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 28.dp, vertical = 20.dp)
                 )
-            } else if (mode == 2) {
-                // Gráfica
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                ) {
-                    Text(
-                        text = if (graphExpr.isEmpty()) "y = ?" else "y = $graphExpr",
-                        fontSize = 20.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp)
+                sections.forEachIndexed { index, title ->
+                    NavigationDrawerItem(
+                        label = { Text(title) },
+                        selected = mode == index,
+                        onClick = {
+                            mode = index
+                            scope.launch { drawerState.close() }
+                        },
+                        modifier = Modifier.padding(itemPadding)
                     )
-                    FunctionGraph(
-                        expression = graphExpr,
+                }
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 28.dp, vertical = 8.dp))
+                NavigationDrawerItem(
+                    label = { Text("🕘 Historial") },
+                    selected = false,
+                    onClick = {
+                        showHistory = true
+                        scope.launch { drawerState.close() }
+                    },
+                    modifier = Modifier.padding(itemPadding)
+                )
+                NavigationDrawerItem(
+                    label = { Text(if (darkTheme) "☀️ Modo claro" else "🌙 Modo oscuro") },
+                    selected = false,
+                    onClick = {
+                        onToggleTheme()
+                        scope.launch { drawerState.close() }
+                    },
+                    modifier = Modifier.padding(itemPadding)
+                )
+            }
+        }
+    ) {
+        Scaffold { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                        Text("☰", fontSize = 26.sp)
+                    }
+                    Text(
+                        sections[mode],
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(start = 4.dp)
+                    )
+                }
+
+                if (mode == 4) {
+                    // Chat con el tutor de mate (trae su propio teclado)
+                    ChatTab(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxWidth()
                     )
-                }
-            } else {
-                // Pantalla de calculadora / ecuaciones
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState(), reverseScrolling = true)
-                        .padding(vertical = 12.dp),
-                    verticalArrangement = Arrangement.Bottom,
-                    horizontalAlignment = Alignment.End
-                ) {
-                    Text(
-                        text = expression.ifEmpty {
-                            if (mode == 0) "0" else "Ej: 2x+3=7  o  x^2-5x+6=0"
-                        },
-                        fontSize = if (expression.length > 14) 28.sp else 40.sp,
-                        color = if (expression.isEmpty()) MaterialTheme.colorScheme.outline
-                        else MaterialTheme.colorScheme.onSurface,
-                        textAlign = TextAlign.End,
-                        modifier = Modifier.fillMaxWidth()
+                } else if (mode == 3) {
+                    // Juego (trae su propio teclado)
+                    GamesHub(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
                     )
-                    val secondary = result.ifEmpty { preview ?: "" }
-                    if (secondary.isNotEmpty()) {
+                } else if (mode == 2) {
+                    // Gráfica
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
+                    ) {
                         Text(
-                            text = secondary,
-                            fontSize = 24.sp,
-                            color = if (result.startsWith("Error")) MaterialTheme.colorScheme.error
-                            else MaterialTheme.colorScheme.primary,
-                            textAlign = TextAlign.End,
+                            text = if (graphExpr.isEmpty()) "y = ?" else "y = $graphExpr",
+                            fontSize = 20.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 8.dp)
+                                .padding(bottom = 8.dp)
+                        )
+                        FunctionGraph(
+                            expression = graphExpr,
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth()
                         )
                     }
-                    if (mode == 1 && result.isNotEmpty() && !result.startsWith("Error")) {
-                        TextButton(onClick = {
-                            val parts = eqExpr.split("=")
-                            if (parts.size == 2) {
-                                graphExpr = "(${parts[0]})-(${parts[1]})"
-                                mode = 2
-                            }
-                        }) {
-                            Text("📈 Ver gráfica")
-                        }
-                    }
-                }
-            }
-
-            // Teclado
-            val rows = when (mode) {
-                0 -> calcRows
-                1 -> equationRows
-                else -> graphRows
-            }
-            val keyHeight = if (mode == 2) 40.dp else 56.dp
-            if (mode < 3) Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                rows.forEach { row ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                } else {
+                    // Pantalla de calculadora / ecuaciones
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState(), reverseScrolling = true)
+                            .padding(vertical = 12.dp),
+                        verticalArrangement = Arrangement.Bottom,
+                        horizontalAlignment = Alignment.End
                     ) {
-                        row.forEach { key ->
-                            val wide = (key == "=" && mode == 0) || key == "Resolver" || (key == "0" && mode == 2)
-                            CalcButton(
-                                label = key,
-                                height = keyHeight,
-                                modifier = Modifier.weight(if (wide) 2f else 1f),
-                                onClick = { onKey(key) }
+                        Text(
+                            text = expression.ifEmpty {
+                                if (mode == 0) "0" else "Ej: 2x+3=7  o  x^2-5x+6=0"
+                            },
+                            fontSize = if (expression.length > 14) 28.sp else 40.sp,
+                            color = if (expression.isEmpty()) MaterialTheme.colorScheme.outline
+                            else MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.End,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        val secondary = result.ifEmpty { preview ?: "" }
+                        if (secondary.isNotEmpty()) {
+                            Text(
+                                text = secondary,
+                                fontSize = 24.sp,
+                                color = if (result.startsWith("Error")) MaterialTheme.colorScheme.error
+                                else MaterialTheme.colorScheme.primary,
+                                textAlign = TextAlign.End,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 8.dp)
                             )
                         }
+                        if (mode == 1 && result.isNotEmpty() && !result.startsWith("Error")) {
+                            TextButton(onClick = {
+                                val parts = eqExpr.split("=")
+                                if (parts.size == 2) {
+                                    graphExpr = "(${parts[0]})-(${parts[1]})"
+                                    mode = 2
+                                }
+                            }) {
+                                Text("📈 Ver gráfica")
+                            }
+                        }
+                    }
+                }
+
+                // Teclado
+                val rows = when (mode) {
+                    0 -> calcRows
+                    1 -> equationRows
+                    else -> graphRows
+                }
+                val keyHeight = if (mode == 2) 40.dp else 56.dp
+                if (mode < 3) Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    rows.forEach { row ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            row.forEach { key ->
+                                val wide = (key == "=" && mode == 0) || key == "Resolver" || (key == "0" && mode == 2)
+                                CalcButton(
+                                    label = key,
+                                    height = keyHeight,
+                                    modifier = Modifier.weight(if (wide) 2f else 1f),
+                                    onClick = { onKey(key) }
+                                )
+                            }
+                        }
                     }
                 }
             }
-        }
 
-        if (showHistory) {
-            HistoryDialog(
-                entries = history,
-                onSelect = { item ->
-                    if (item.kind == "calc") {
-                        calcExpr = item.input
-                        calcResult = ""
-                        mode = 0
-                    } else {
-                        eqExpr = item.input
-                        eqResult = ""
-                        mode = 1
-                    }
-                    showHistory = false
-                },
-                onClear = {
-                    history.clear()
-                    HistoryItem.save(prefs, history)
-                },
-                onDismiss = { showHistory = false }
-            )
+            if (showHistory) {
+                HistoryDialog(
+                    entries = history,
+                    onSelect = { item ->
+                        if (item.kind == "calc") {
+                            calcExpr = item.input
+                            calcResult = ""
+                            mode = 0
+                        } else {
+                            eqExpr = item.input
+                            eqResult = ""
+                            mode = 1
+                        }
+                        showHistory = false
+                    },
+                    onClear = {
+                        history.clear()
+                        HistoryItem.save(prefs, history)
+                    },
+                    onDismiss = { showHistory = false }
+                )
+            }
         }
     }
 }
